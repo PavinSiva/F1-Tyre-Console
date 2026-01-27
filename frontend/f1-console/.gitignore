@@ -1,0 +1,20 @@
+# Frontend
+node_modules/
+dist/
+build/
+
+# Backend
+__pycache__/
+*.pyc
+.env
+.venv/
+
+# ML
+*.pkl
+*.h5
+*.onnx
+*.pt
+
+# Editor
+.vscode/
+.DS_Store

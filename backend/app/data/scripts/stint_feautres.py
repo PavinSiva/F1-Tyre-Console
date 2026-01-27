@@ -1,0 +1,69 @@
+import pandas as pd
+
+# -------------------------
+# TRACK METADATA
+# -------------------------
+TRACK_METADATA = {
+    "Bahrain": {"abrasion": 0.85, "lap_length": 5.412, "type": "power"},
+    "Saudi Arabian": {"abrasion": 0.6, "lap_length": 6.174, "type": "street"},
+    "Australian": {"abrasion": 0.65, "lap_length": 5.278, "type": "semi_street"},
+    "Azerbaijan": {"abrasion": 0.55, "lap_length": 6.003, "type": "street"},
+    "Miami": {"abrasion": 0.6, "lap_length": 5.412, "type": "street"},
+    "Emilia Romagna": {"abrasion": 0.7, "lap_length": 4.909, "type": "technical"},
+    "Monaco": {"abrasion": 0.2, "lap_length": 3.337, "type": "street"},
+    "Spanish": {"abrasion": 0.9, "lap_length": 4.675, "type": "technical"},
+    "Canadian": {"abrasion": 0.65, "lap_length": 4.361, "type": "stop_start"},
+    "Austrian": {"abrasion": 0.8, "lap_length": 4.318, "type": "power"},
+    "British": {"abrasion": 0.75, "lap_length": 5.891, "type": "high_speed"},
+    "Hungarian": {"abrasion": 0.7, "lap_length": 4.381, "type": "technical"},
+    "Belgian": {"abrasion": 0.6, "lap_length": 7.004, "type": "high_speed"},
+    "Dutch": {"abrasion": 0.65, "lap_length": 4.259, "type": "banked"},
+    "Italian": {"abrasion": 0.7, "lap_length": 5.793, "type": "power"},
+    "Singapore": {"abrasion": 0.6, "lap_length": 4.94, "type": "street"},
+    "Japanese": {"abrasion": 0.8, "lap_length": 5.807, "type": "high_speed"},
+    "Qatar": {"abrasion": 0.9, "lap_length": 5.419, "type": "high_speed"},
+    "United States": {"abrasion": 0.75, "lap_length": 5.513, "type": "technical"},
+    "Mexican": {"abrasion": 0.6, "lap_length": 4.304, "type": "high_altitude"},
+    "Brazilian": {"abrasion": 0.7, "lap_length": 4.309, "type": "technical"},
+    "Las Vegas": {"abrasion": 0.5, "lap_length": 6.12, "type": "street"},
+    "Abu Dhabi": {"abrasion": 0.65, "lap_length": 5.281, "type": "power"},
+}
+
+# -------------------------
+# LOAD DATA
+# -------------------------
+df = pd.read_csv("app/data/datasets/stints_train.csv")
+
+df["GP_CLEAN"] = (
+    df["GrandPrix"]
+    .str.replace(" Grand Prix", "", regex=False)
+    .str.replace(" GP", "", regex=False)
+)
+
+# -------------------------
+# MAP TRACK METADATA
+# -------------------------
+df["TrackAbrasion"] = df["GP_CLEAN"].map(lambda x: TRACK_METADATA.get(x, {}).get("abrasion"))
+df["LapLengthKm"] = df["GP_CLEAN"].map(lambda x: TRACK_METADATA.get(x, {}).get("lap_length"))
+df["TrackType"] = df["GP_CLEAN"].map(lambda x: TRACK_METADATA.get(x, {}).get("type"))
+
+df = df.dropna()
+
+# -------------------------
+# ADD RACE MODE (SIMULATED)
+# -------------------------
+def assign_race_mode(row):
+    if row["StintLength"] >= 30:
+        return "TYRE_SAVING"
+    elif row["StintLength"] <= 15:
+        return "PUSH"
+    else:
+        return "BALANCED"
+
+df["RaceMode"] = df.apply(assign_race_mode, axis=1)
+
+# 🔥 Keep Driver column
+df = df[df["Driver"].notna()]
+
+df.to_csv("app/data/datasets/stints_train_features.csv", index=False)
+print("✅ Features + RaceMode + Driver added")
