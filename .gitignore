@@ -1,0 +1,15 @@
+node_modules/
+__pycache__/
+*.pyc
+*.pyo
+backend/cache/
+venv/
+.venv/
+.env
+.env.*
+!.env.example
+dist/
+build/
+.vscode/
+.DS_Store
+*.sqlite-journal
